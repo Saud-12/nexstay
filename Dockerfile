@@ -1,12 +1,11 @@
-FROM openjdk:21-jdk-slim
-
-# Set the working directory in the container
+FROM gradle:8.11.1-jdk21 AS builder
 WORKDIR /app
+COPY . .
+RUN ./gradlew clean build --no-daemon
 
-# Copy the jar file from the project directory
-COPY ./build/libs/nexstay-0.0.1-SNAPSHOT.jar ./app.jar
+FROM openjdk:21-jdk-slim
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
-
-# Command to run the application
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
